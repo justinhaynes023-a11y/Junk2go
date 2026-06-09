@@ -1,11 +1,160 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
 const GOOGLE_REVIEW_URL =
   "https://maps.app.goo.gl/zipZfV8rJigP4mBM9";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 function App() {
   const [assistantMode, setAssistantMode] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      text: "Hello! I’m Ava, the Junk 2 Go virtual assistant. I can help you get started with a junk removal quote. Tell me what you need removed, and you can upload photos whenever you’re ready.",
+    },
+  ]);
+  const [draft, setDraft] = useState("");
+  const [attachments, setAttachments] = useState([]);
+  const [leadImages, setLeadImages] = useState([]);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!assistantMode) {
+      setDraft("");
+      setAttachments([]);
+      setLeadImages([]);
+      setLeadSubmitted(false);
+      setIsSending(false);
+      setMessages([
+        {
+          role: "assistant",
+          text: "Hello! I’m Ava, the Junk 2 Go virtual assistant. I can help you get started with a junk removal quote. Tell me what you need removed, and you can upload photos whenever you’re ready.",
+        },
+      ]);
+    }
+  }, [assistantMode]);
+
+  const handleFileChange = async (event) => {
+    const files = Array.from(event.target.files || []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    const selectedImages = await Promise.all(
+      files.slice(0, 4).map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              resolve({
+                name: file.name,
+                type: file.type,
+                dataUrl: String(reader.result),
+              });
+            };
+            reader.onerror = () => reject(new Error(`Unable to read ${file.name}`));
+            reader.readAsDataURL(file);
+          }),
+      ),
+    );
+
+    setAttachments((current) => [...current, ...selectedImages].slice(0, 4));
+    setLeadImages((current) => [...current, ...selectedImages].slice(0, 4));
+    event.target.value = "";
+  };
+
+  const submitLeadIfReady = async (conversation, imagesForLead) => {
+    if (leadSubmitted) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/agent/lead`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: conversation,
+          images: imagesForLead,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit lead.");
+      }
+
+      if (data.submitted) {
+        setLeadSubmitted(true);
+        setMessages((current) => [
+          ...current,
+          {
+            role: "assistant",
+            text: "Thanks — I sent your request to the Junk 2 Go owner for review. Someone will follow up with you shortly by phone.",
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Lead email failed:", error);
+    }
+  };
+
+  const sendMessage = async (overrideText = draft) => {
+    const text = overrideText.trim();
+
+    if (!text && attachments.length === 0) {
+      return;
+    }
+
+    const previousMessages = messages;
+    const nextMessages = [...previousMessages, { role: "user", text: text || "I uploaded photos for a quote." }];
+    setMessages(nextMessages);
+    setDraft("");
+    setIsSending(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/agent/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: text,
+          history: previousMessages,
+          images: attachments,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send message.");
+      }
+
+      const assistantMessage = { role: "assistant", text: data.reply };
+      const conversationWithReply = [...nextMessages, assistantMessage];
+      const imagesForLead = [...leadImages, ...attachments].slice(0, 4);
+
+      setMessages(conversationWithReply);
+      setAttachments([]);
+      await submitLeadIfReady(conversationWithReply, imagesForLead);
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          text: `Sorry, I could not process that right now. ${error.message}`,
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const assistantCard = (
     <div className="chat-card">
@@ -21,22 +170,45 @@ function App() {
       </div>
 
       <div className="chat-body">
-        <p>
-          Hi, I’m Ava. I’ll help you get a fast quote for your junk removal.
-          What type of junk do you need removed?
-        </p>
+        <div className="message-list">
+          {messages.map((message, index) => (
+            <p key={`${message.role}-${index}`} className={message.role === "assistant" ? "message assistant-message" : "message user-message"}>
+              {message.text}
+            </p>
+          ))}
+        </div>
 
-        <button>🛋️ Furniture</button>
-        <button>🧺 Appliances</button>
-        <button>🌳 Yard Waste</button>
-        <button>🏗️ Construction Debris</button>
-        <button>📦 Other Items</button>
       </div>
 
-      <div className="chat-input">
-        <input placeholder="Type your answer..." />
-        <button>➜</button>
-      </div>
+      {attachments.length > 0 && (
+        <div className="attachment-strip">
+          {attachments.map((attachment) => (
+            <div className="attachment-pill" key={attachment.name}>
+              <img src={attachment.dataUrl} alt={attachment.name} />
+              <span>{attachment.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+<div className="chat-upload">
+  <label htmlFor="photo-upload" className="upload-btn">
+    📸 Upload Photos
+  </label>
+
+  <input
+    id="photo-upload"
+    type="file"
+    multiple
+    accept="image/*"
+    hidden
+  />
+</div>
+
+<div className="chat-input">
+  <input placeholder="Message Ava..." />
+  <button>➜</button>
+</div>
     </div>
   );
 
