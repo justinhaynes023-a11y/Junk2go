@@ -1,24 +1,23 @@
 import { useEffect, useRef, useState } from "react";
+import { Star, CheckCircle2, Zap, DollarSign, ShieldCheck, Leaf, Sofa, Refrigerator, Warehouse, Building2, Phone } from "lucide-react";
 import "./App.css";
 
 const GOOGLE_REVIEW_URL =
   "https://maps.app.goo.gl/zipZfV8rJigP4mBM9";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
+const HERO_GREETING = "Hi! I'm Ava with Junk 2 Go. What do you need removed?";
+
 function App() {
   const [assistantMode, setAssistantMode] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      text: "Hello! I’m Ava, the Junk 2 Go virtual assistant. I can help you get started with a junk removal quote. Tell me what you need removed, and you can upload photos whenever you’re ready.",
-    },
-  ]);
+  const [messages, setMessages] = useState([{ role: "assistant", text: HERO_GREETING }]);
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [leadImages, setLeadImages] = useState([]);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const fileInputRef = useRef(null);
+  const chatBodyRef = useRef(null);
 
   useEffect(() => {
     if (!assistantMode) {
@@ -27,14 +26,29 @@ function App() {
       setLeadImages([]);
       setLeadSubmitted(false);
       setIsSending(false);
-      setMessages([
-        {
-          role: "assistant",
-          text: "Hello! I’m Ava, the Junk 2 Go virtual assistant. I can help you get started with a junk removal quote. Tell me what you need removed, and you can upload photos whenever you’re ready.",
-        },
-      ]);
+      setMessages([{ role: "assistant", text: HERO_GREETING }]);
+      return;
     }
+
+    setIsSending(true);
+    fetch(`${API_BASE_URL}/agent/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "hello", history: [] }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.reply) setMessages([{ role: "assistant", text: data.reply }]);
+      })
+      .catch(() => {})
+      .finally(() => setIsSending(false));
   }, [assistantMode]);
+
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleFileChange = async (event) => {
     const files = Array.from(event.target.files || []);
@@ -91,13 +105,6 @@ function App() {
 
       if (data.submitted) {
         setLeadSubmitted(true);
-        setMessages((current) => [
-          ...current,
-          {
-            role: "assistant",
-            text: "Thanks — I sent your request to the Junk 2 Go owner for review. Someone will follow up with you shortly by phone.",
-          },
-        ]);
       }
     } catch (error) {
       console.error("Lead email failed:", error);
@@ -142,7 +149,9 @@ function App() {
 
       setMessages(conversationWithReply);
       setAttachments([]);
-      await submitLeadIfReady(conversationWithReply, imagesForLead);
+      if (data.leadReady) {
+        await submitLeadIfReady(conversationWithReply, imagesForLead);
+      }
     } catch (error) {
       setMessages((current) => [
         ...current,
@@ -169,46 +178,76 @@ function App() {
         <span>● Online</span>
       </div>
 
-      <div className="chat-body">
+      <div className="chat-body" ref={chatBodyRef}>
         <div className="message-list">
           {messages.map((message, index) => (
-            <p key={`${message.role}-${index}`} className={message.role === "assistant" ? "message assistant-message" : "message user-message"}>
+            <div
+              key={`${message.role}-${index}`}
+              className={`message ${message.role === "assistant" ? "assistant-message" : "user-message"}`}
+            >
               {message.text}
-            </p>
+            </div>
           ))}
+          {isSending && (
+            <div className="message assistant-message typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          )}
         </div>
-
       </div>
 
       {attachments.length > 0 && (
         <div className="attachment-strip">
-          {attachments.map((attachment) => (
+          {attachments.map((attachment, i) => (
             <div className="attachment-pill" key={attachment.name}>
               <img src={attachment.dataUrl} alt={attachment.name} />
-              <span>{attachment.name}</span>
+              <button
+                className="remove-attachment"
+                onClick={() => setAttachments((c) => c.filter((_, idx) => idx !== i))}
+              >
+                ✕
+              </button>
             </div>
           ))}
         </div>
       )}
 
-<div className="chat-upload">
-  <label htmlFor="photo-upload" className="upload-btn">
-    📸 Upload Photos
-  </label>
-
-  <input
-    id="photo-upload"
-    type="file"
-    multiple
-    accept="image/*"
-    hidden
-  />
-</div>
-
-<div className="chat-input">
-  <input placeholder="Message Ava..." />
-  <button>➜</button>
-</div>
+      <div className="chat-footer">
+        <label htmlFor="photo-upload" className="attach-btn" title="Add photos">
+          📷
+        </label>
+        <input
+          id="photo-upload"
+          type="file"
+          multiple
+          accept="image/*"
+          hidden
+          ref={fileInputRef}
+          onChange={handleFileChange}
+        />
+        <input
+          className="chat-text-input"
+          placeholder="Message Ava..."
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey && !isSending) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
+          disabled={isSending}
+        />
+        <button
+          className="send-btn"
+          onClick={() => sendMessage()}
+          disabled={isSending || (!draft.trim() && attachments.length === 0)}
+        >
+          ➜
+        </button>
+      </div>
     </div>
   );
 
@@ -261,7 +300,7 @@ function App() {
         <div className="hero-overlay"></div>
 
         <div className="hero-content">
-          <p className="badge">⭐ TOP RATED JUNK REMOVAL SERVICE</p>
+          <p className="badge"><Star size={15} strokeWidth={2.5} /> TOP RATED JUNK REMOVAL SERVICE</p>
 
           <h1>
             WE TAKE THE JUNK.
@@ -274,9 +313,9 @@ function App() {
           </p>
 
           <div className="hero-points">
-            <p>✅ Same-Day Service</p>
-            <p>✅ Upfront Pricing</p>
-            <p>✅ Eco-Friendly Disposal</p>
+            <p><CheckCircle2 size={18} strokeWidth={2} /> Same-Day Service</p>
+            <p><CheckCircle2 size={18} strokeWidth={2} /> Upfront Pricing</p>
+            <p><CheckCircle2 size={18} strokeWidth={2} /> Eco-Friendly Disposal</p>
           </div>
 
           <div className="hero-buttons">
@@ -294,19 +333,19 @@ function App() {
 
       <section className="feature-bar">
         <div>
-          <h3>⚡ Same-Day Service</h3>
+          <h3><Zap size={18} strokeWidth={2} /> Same-Day Service</h3>
           <p>When available in your area</p>
         </div>
         <div>
-          <h3>💲 Upfront Pricing</h3>
+          <h3><DollarSign size={18} strokeWidth={2} /> Upfront Pricing</h3>
           <p>No hidden fees. Ever.</p>
         </div>
         <div>
-          <h3>🛡️ Owner Approved</h3>
+          <h3><ShieldCheck size={18} strokeWidth={2} /> Owner Approved</h3>
           <p>Drafts are reviewed and approved by humans</p>
         </div>
         <div>
-          <h3>🍃 Eco-Friendly</h3>
+          <h3><Leaf size={18} strokeWidth={2} /> Eco-Friendly</h3>
           <p>Donate & recycle when possible</p>
         </div>
       </section>
@@ -320,25 +359,25 @@ function App() {
 
         <div className="service-grid">
           <div className="service-card">
-            <div className="icon">🛋️</div>
+            <div className="icon"><Sofa size={26} strokeWidth={1.5} /></div>
             <h3>Furniture Removal</h3>
             <p>Couches, mattresses, tables, chairs, dressers & more.</p>
           </div>
 
           <div className="service-card">
-            <div className="icon">🧺</div>
+            <div className="icon"><Refrigerator size={26} strokeWidth={1.5} /></div>
             <h3>Appliance Removal</h3>
             <p>Refrigerators, washers, dryers, stoves & old appliances.</p>
           </div>
 
           <div className="service-card">
-            <div className="icon">🏠</div>
+            <div className="icon"><Warehouse size={26} strokeWidth={1.5} /></div>
             <h3>Garage Cleanouts</h3>
             <p>Old boxes, tools, clutter, and everything in between.</p>
           </div>
 
           <div className="service-card">
-            <div className="icon">🏢</div>
+            <div className="icon"><Building2 size={26} strokeWidth={1.5} /></div>
             <h3>Property Cleanouts</h3>
             <p>Basements, rentals, offices, estates, and move-outs.</p>
           </div>
@@ -481,7 +520,7 @@ function App() {
 
   <p>
     <a href="tel:7343087600">
-      📞 (734) 308-7600
+      <Phone size={15} strokeWidth={2} /> (734) 308-7600
     </a>
   </p>
 
