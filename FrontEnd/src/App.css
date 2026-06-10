@@ -447,6 +447,8 @@ footer span {
   font-size: 14px;
   background: transparent;
   min-width: 0;
+  color: #111;
+  -webkit-text-fill-color: #111;
 }
 
 .chat-text-input:disabled {
