@@ -81,7 +81,7 @@ function App() {
     event.target.value = "";
   };
 
-  const submitLeadIfReady = async (conversation, imagesForLead) => {
+  const submitLeadIfReady = async (conversation, imagesForLead, quotedPrice = null) => {
     if (leadSubmitted) {
       return;
     }
@@ -95,6 +95,7 @@ function App() {
         body: JSON.stringify({
           messages: conversation,
           images: imagesForLead,
+          quotedPrice,
         }),
       });
 
@@ -151,7 +152,7 @@ function App() {
       setMessages(conversationWithReply);
       setAttachments([]);
       if (data.leadReady) {
-        await submitLeadIfReady(conversationWithReply, imagesForLead);
+        await submitLeadIfReady(conversationWithReply, imagesForLead, data.quotedPrice ?? null);
       }
     } catch (error) {
       setMessages((current) => [
