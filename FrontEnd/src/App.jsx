@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Star, CheckCircle2, Zap, DollarSign, ShieldCheck, Leaf, Sofa, Refrigerator, Warehouse, Building2, Phone } from "lucide-react";
 import "./App.css";
 
-const GOOGLE_REVIEW_URL =
-  "https://maps.app.goo.gl/zipZfV8rJigP4mBM9";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://junk2go.onrender.com";
 
 const HERO_GREETING = "Hi! I'm Ava with Junk 2 Go. What do you need removed?";
 
