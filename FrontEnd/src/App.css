@@ -776,11 +776,11 @@ footer a {
 @media (max-width: 950px) {
   .navbar {
     height: auto;
-    padding: 18px 20px;
+    padding: 14px 18px;
   }
 
   .brand {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .nav-links {
@@ -788,43 +788,58 @@ footer a {
   }
 
   .nav-button {
-    padding: 11px 14px;
+    padding: 10px 14px;
     font-size: 13px;
   }
 
   .hero {
     min-height: auto;
-    padding: 45px 20px;
+    padding: 32px 18px 28px;
     flex-direction: column;
     align-items: flex-start;
     background-position: center;
   }
 
   .hero-overlay {
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.78);
   }
 
   .hero-content {
     width: 100%;
   }
 
+  .badge {
+    margin-bottom: 16px;
+    font-size: 11px;
+    padding: 7px 11px;
+  }
+
   .hero h1 {
-    font-size: 39px;
+    font-size: 32px;
+    margin-bottom: 14px;
   }
 
   .hero-text {
-    font-size: 18px;
+    font-size: 15px;
+    margin-bottom: 16px;
   }
 
-  .hero-points,
+  .hero-points {
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 14px;
+  }
+
   .hero-buttons {
     flex-direction: column;
+    gap: 10px;
   }
 
   .hero-buttons button,
   .hero-buttons a {
     width: 100%;
     text-align: center;
+    padding: 13px 18px;
   }
 
   .chat-card {
@@ -832,51 +847,98 @@ footer a {
     right: auto;
     bottom: auto;
     width: 100%;
-    margin-top: 35px;
-  }
-
-  .feature-bar,
-  .service-grid,
-  .service-area,
-  .step-grid,
-  .stats {
-    grid-template-columns: 1fr;
+    margin-top: 24px;
   }
 
   .feature-bar {
-    padding: 30px 20px;
+    grid-template-columns: 1fr 1fr;
+    padding: 20px 18px;
+    gap: 0;
   }
 
   .feature-bar div {
-    border-right: none;
+    padding: 14px 12px;
+    border-right: 1px solid #333;
     border-bottom: 1px solid #333;
-    padding-bottom: 15px;
+  }
+
+  .feature-bar div:nth-child(2n) {
+    border-right: none;
+  }
+
+  .feature-bar div:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+
+  .feature-bar h3 {
+    font-size: 13px;
+  }
+
+  .feature-bar p {
+    font-size: 12px;
+  }
+
+  .service-grid,
+  .step-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .service-area {
+    grid-template-columns: 1fr;
   }
 
   .services,
-  .how,
+  .how {
+    padding: 40px 18px;
+  }
+
   .service-area {
-    padding: 55px 20px;
+    padding: 40px 18px;
   }
 
   .services h2,
   .service-area h2,
   .how h2 {
-    font-size: 32px;
+    font-size: 26px;
+  }
+
+  .service-card,
+  .step-card {
+    padding: 20px 16px;
+  }
+
+  .icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 14px;
   }
 
   .map-box {
-    height: 320px;
+    height: 260px;
   }
 
   .stats {
-    width: calc(100% - 40px);
-    margin: 35px 20px;
+    grid-template-columns: 1fr 1fr;
+    width: calc(100% - 36px);
+    margin: 28px 18px;
   }
 
   .stats div {
-    border-right: none;
+    padding: 20px 16px;
+    border-right: 1px solid #333;
     border-bottom: 1px solid #333;
+  }
+
+  .stats div:nth-child(2n) {
+    border-right: none;
+  }
+
+  .stats div:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+
+  .stats h2 {
+    font-size: 28px;
   }
 
   .nav-phone,
@@ -887,27 +949,29 @@ footer a {
   }
 
   .reviews {
-    padding: 55px 20px;
+    padding: 40px 18px;
   }
-}
 
-@media (max-width: 950px) {
   .review-grid {
     grid-template-columns: 1fr;
   }
 
-  .reviews {
-    padding: 55px 20px;
+  .review-card {
+    padding: 20px 18px;
+  }
+
+  footer {
+    padding: 32px 18px;
   }
 
   .assistant-only {
-    padding: 36px 16px 60px;
-    gap: 24px;
+    padding: 30px 16px 50px;
+    gap: 20px;
     min-height: auto;
   }
 
   .assistant-intro h2 {
-    font-size: 26px;
+    font-size: 24px;
   }
 
   .assistant-page .chat-card {
@@ -916,7 +980,7 @@ footer a {
   }
 
   .assistant-page .chat-body {
-    max-height: 55vh;
+    max-height: 50vh;
   }
 
 }
