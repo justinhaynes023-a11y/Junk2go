@@ -7,6 +7,7 @@ const API_BASE_URL =
   "https://junk2go.onrender.com";
 
 const HERO_GREETING = "Hi! I'm Ava with Junk 2 Go. What do you need removed?";
+const GOOGLE_REVIEW_URL = "https://www.google.com/search?q=Junk+2+Go+Detroit+reviews";
 
 function App() {
   const [assistantMode, setAssistantMode] = useState(false);
