@@ -7,7 +7,8 @@ const API_BASE_URL =
   "https://junk2go.onrender.com";
 
 const HERO_GREETING = "Hi! I'm Ava with Junk 2 Go. What do you need removed?";
-const GOOGLE_REVIEW_URL = "https://www.google.com/search?q=Junk+2+Go+Detroit+reviews";
+const GOOGLE_REVIEW_URL =
+  "https://www.google.com/maps/place/Junk+To+GO/@42.4400166,-83.4340175,11z/data=!4m8!3m7!1s0x81a34dbe008c7803:0x73f85fa4b8d90e42!8m2!3d42.4400166!4d-83.4340175!9m1!1b1!16s%2Fg%2F11yzlpx790?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D";
 
 function App() {
   const [assistantMode, setAssistantMode] = useState(false);
@@ -28,6 +29,7 @@ function App() {
       setLeadSubmitted(false);
       setIsSending(false);
       setMessages([{ role: "assistant", text: HERO_GREETING }]);
+      
       return;
     }
 
