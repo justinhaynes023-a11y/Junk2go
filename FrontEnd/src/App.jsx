@@ -21,6 +21,7 @@ function App() {
   const [isSending, setIsSending] = useState(false);
   const fileInputRef = useRef(null);
   const chatBodyRef = useRef(null);
+  const textInputRef = useRef(null);
 
   useEffect(() => {
     if (!assistantMode) {
@@ -191,6 +192,7 @@ function App() {
       ]);
     } finally {
       setIsSending(false);
+      textInputRef.current?.focus();
     }
   };
 
@@ -257,6 +259,7 @@ function App() {
           onChange={handleFileChange}
         />
         <input
+          ref={textInputRef}
           className="chat-text-input"
           placeholder="Message Ava..."
           value={draft}
