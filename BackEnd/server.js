@@ -4,6 +4,7 @@ import cors from "cors";
 import OpenAI from "openai";
 import { Resend } from "resend";
 import twilio from "twilio";
+import { google } from "googleapis";
 import crypto from "crypto";
 
 const app = express();
@@ -89,6 +90,108 @@ function buildImageAttachments(images = []) {
 function extractPhone(transcript) {
   const match = transcript.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
   return match ? match[0] : null;
+}
+
+function extractName(transcript) {
+  const lines = transcript.split("\n\n");
+  for (let i = 0; i < lines.length - 1; i++) {
+    if (lines[i].startsWith("Ava:") && /name/i.test(lines[i])) {
+      const next = lines[i + 1];
+      if (next?.startsWith("Customer:")) {
+        const name = next.replace("Customer:", "").trim();
+        if (name.length < 40 && /^[a-zA-Z\s]+$/.test(name)) return name;
+      }
+    }
+  }
+  return "";
+}
+
+function extractAddress(transcript) {
+  const lines = transcript.split("\n\n");
+  for (const line of lines) {
+    if (line.startsWith("Customer:") && /\d{5}/.test(line)) {
+      return line.replace("Customer:", "").trim();
+    }
+  }
+  return "";
+}
+
+function extractItems(transcript) {
+  const lines = transcript.split("\n\n");
+  for (const line of lines) {
+    if (line.startsWith("Customer:")) {
+      const text = line.replace("Customer:", "").trim();
+      if (text.length > 3 && !/^(hi|hello|hey|yes|no|ok|sure|thanks)$/i.test(text)) {
+        return text.slice(0, 120);
+      }
+    }
+  }
+  return "";
+}
+
+function getSheets() {
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  if (!email || !key || !process.env.GOOGLE_SHEET_ID) return null;
+
+  const auth = new google.auth.JWT({
+    email,
+    key,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+
+  return google.sheets({ version: "v4", auth });
+}
+
+async function appendLeadRow(lead) {
+  const sheetsClient = getSheets();
+  if (!sheetsClient) return null;
+
+  try {
+    const date = new Date().toLocaleDateString("en-US");
+    const row = [
+      date,
+      extractName(lead.transcript),
+      lead.clientPhone || "",
+      extractAddress(lead.transcript),
+      extractItems(lead.transcript),
+      lead.quotedPrice ? `$${lead.quotedPrice}` : "",
+      "",
+      "Pending",
+      lead.token,
+    ];
+
+    const response = await sheetsClient.spreadsheets.values.append({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: "Leads!A:I",
+      valueInputOption: "USER_ENTERED",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: [row] },
+    });
+
+    const updatedRange = response.data.updates?.updatedRange;
+    const rowMatch = updatedRange?.match(/(\d+)$/);
+    return rowMatch ? parseInt(rowMatch[1]) : null;
+  } catch (err) {
+    console.error("Sheets append error:", err.message);
+    return null;
+  }
+}
+
+async function updateLeadRow(rowNumber, finalPrice) {
+  const sheetsClient = getSheets();
+  if (!sheetsClient || !rowNumber) return;
+
+  try {
+    await sheetsClient.spreadsheets.values.update({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: `Leads!G${rowNumber}:H${rowNumber}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [[`$${finalPrice.toFixed(2)}`, "Approved"]] },
+    });
+  } catch (err) {
+    console.error("Sheets update error:", err.message);
+  }
 }
 
 // ── Page builders ─────────────────────────────────────────────────────────────
@@ -222,14 +325,18 @@ app.post("/agent/lead", async (req, res) => {
     const token = crypto.randomBytes(24).toString("hex");
     const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
 
-    pendingLeads.set(token, {
+    const leadData = {
       token,
       quotedPrice,
       transcript,
       clientPhone,
       images,
       createdAt: Date.now(),
-    });
+    };
+    pendingLeads.set(token, leadData);
+
+    const sheetRow = await appendLeadRow(leadData);
+    if (sheetRow) leadData.sheetRow = sheetRow;
 
     const approveUrl = `${BACKEND_URL}/agent/approve?token=${token}`;
     const priceDisplay = quotedPrice ? `$${quotedPrice}` : "Not extracted";
@@ -307,6 +414,7 @@ app.post("/agent/approve", async (req, res) => {
   }
 
   pendingLeads.delete(token);
+  await updateLeadRow(lead.sheetRow, finalPrice);
 
   const phone = lead.clientPhone;
   console.log(`✅ Quote approved — $${finalPrice} | Phone: ${phone || "N/A"}`);
