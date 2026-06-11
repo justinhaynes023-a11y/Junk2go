@@ -7,6 +7,7 @@ const API_BASE_URL =
   "https://junk2go.onrender.com";
 
 const HERO_GREETING = "Hi! I'm Ava with Junk 2 Go. What do you need removed?";
+const CHAT_STORAGE_KEY = "junk2go_chat";
 const GOOGLE_REVIEW_URL =
   "https://www.google.com/maps/place/Junk+To+GO/@42.4400166,-83.4340175,11z/data=!4m8!3m7!1s0x81a34dbe008c7803:0x73f85fa4b8d90e42!8m2!3d42.4400166!4d-83.4340175!9m1!1b1!16s%2Fg%2F11yzlpx790?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D";
 
@@ -29,10 +30,25 @@ function App() {
       setLeadSubmitted(false);
       setIsSending(false);
       setMessages([{ role: "assistant", text: HERO_GREETING }]);
-      
       return;
     }
 
+    // Restore saved conversation if one exists and is less than 24 hours old
+    try {
+      const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (saved) {
+        const { messages: parsed, savedAt } = JSON.parse(saved);
+        const ageHours = (Date.now() - savedAt) / (1000 * 60 * 60);
+        if (Array.isArray(parsed) && parsed.length > 0 && ageHours < 24) {
+          setMessages(parsed);
+          return;
+        } else {
+          localStorage.removeItem(CHAT_STORAGE_KEY);
+        }
+      }
+    } catch {}
+
+    // No saved conversation — fetch fresh greeting
     setMessages([]);
     setIsSending(true);
     fetch(`${API_BASE_URL}/agent/chat`, {
@@ -47,6 +63,13 @@ function App() {
       .catch(() => {})
       .finally(() => setIsSending(false));
   }, [assistantMode]);
+
+  // Persist conversation to localStorage whenever messages change
+  useEffect(() => {
+    if (assistantMode && messages.length > 0) {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ messages, savedAt: Date.now() }));
+    }
+  }, [messages, assistantMode]);
 
   useEffect(() => {
     if (chatBodyRef.current) {
@@ -110,6 +133,7 @@ function App() {
 
       if (data.submitted) {
         setLeadSubmitted(true);
+        localStorage.removeItem(CHAT_STORAGE_KEY);
       }
     } catch (error) {
       console.error("Lead email failed:", error);
