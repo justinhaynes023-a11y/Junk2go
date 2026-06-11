@@ -305,9 +305,6 @@ function App() {
             <p>Describe what you need removed and our team will follow up with pricing and scheduling.</p>
           </div>
           {assistantCard}
-          <p className="call-fallback">
-            Prefer to call? <a href="tel:7343087600">(734) 308-7600</a>
-          </p>
         </section>
       </div>
     );

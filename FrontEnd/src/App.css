@@ -884,7 +884,7 @@ footer a {
   }
 
   .service-area {
-    grid-template-columns: 1fr;
+    display: none;
   }
 
   .services,
