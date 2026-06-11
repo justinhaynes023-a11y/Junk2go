@@ -316,12 +316,15 @@ app.post("/agent/approve", async (req, res) => {
 
   if (phone && twilioClient && process.env.TWILIO_FROM_NUMBER) {
     try {
+      const bookingUrl = process.env.BOOKING_URL || "";
+      const bookingLine = bookingUrl
+        ? ` Schedule your pickup here: ${bookingUrl}`
+        : " Call us at (734) 308-7600 to schedule.";
+
       await twilioClient.messages.create({
         to: phone,
         from: process.env.TWILIO_FROM_NUMBER,
-        body:
-          `Hi! This is Junk 2 Go. Your junk removal quote has been approved at $${finalPrice.toFixed(2)}. ` +
-          `Reply YES to confirm your appointment or call us at (734) 308-7600.`,
+        body: `Hi! This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} For questions call us at (734) 308-7600.`,
       });
       smsStatus = "sent";
       console.log(`📱 SMS sent to ${phone}`);
