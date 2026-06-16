@@ -48,8 +48,10 @@ function buildInput(history = [], message, images = []) {
     }
   }
   const content = [];
-  if (message?.trim()) content.push({ type: "input_text", text: message.trim() });
-  normalizeImages(images).forEach((url) => content.push({ type: "input_image", image_url: url }));
+  const normalizedImages = normalizeImages(images);
+  const text = message?.trim() || (normalizedImages.length > 0 ? "I uploaded photos for a quote." : "");
+  if (text) content.push({ type: "input_text", text });
+  normalizedImages.forEach((url) => content.push({ type: "input_image", image_url: url }));
   if (content.length > 0) input.push({ role: "user", content });
   return input;
 }

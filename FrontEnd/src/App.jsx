@@ -78,6 +78,29 @@ function App() {
     }
   }, [messages]);
 
+  const toJpeg = (file) =>
+    new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        URL.revokeObjectURL(objectUrl);
+        resolve({
+          name: file.name.replace(/\.[^.]+$/, ".jpg"),
+          type: "image/jpeg",
+          dataUrl: canvas.toDataURL("image/jpeg", 0.82),
+        });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error(`Unable to read ${file.name}`));
+      };
+      img.src = objectUrl;
+    });
+
   const handleFileChange = async (event) => {
     const files = Array.from(event.target.files || []);
 
@@ -85,23 +108,7 @@ function App() {
       return;
     }
 
-    const selectedImages = await Promise.all(
-      files.slice(0, 4).map(
-        (file) =>
-          new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              resolve({
-                name: file.name,
-                type: file.type,
-                dataUrl: String(reader.result),
-              });
-            };
-            reader.onerror = () => reject(new Error(`Unable to read ${file.name}`));
-            reader.readAsDataURL(file);
-          }),
-      ),
-    );
+    const selectedImages = await Promise.all(files.slice(0, 4).map(toJpeg));
 
     setAttachments((current) => [...current, ...selectedImages].slice(0, 4));
     setLeadImages((current) => [...current, ...selectedImages].slice(0, 4));
