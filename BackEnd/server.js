@@ -3,7 +3,6 @@ import express from "express";
 import cors from "cors";
 import OpenAI from "openai";
 import { Resend } from "resend";
-import twilio from "twilio";
 import { google } from "googleapis";
 import crypto from "crypto";
 
@@ -13,10 +12,6 @@ const PORT = process.env.PORT || 5000;
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-const twilioClient =
-  process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
-    ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-    : null;
 
 app.use(cors());
 app.use(express.json({ limit: "25mb" }));
@@ -424,20 +419,29 @@ app.post("/agent/approve", async (req, res) => {
   let smsStatus = "not_sent";
   let smsError = null;
 
-  if (phone && twilioClient && process.env.TWILIO_FROM_NUMBER) {
+  if (phone && process.env.TEXTBELT_KEY) {
     try {
       const bookingUrl = process.env.BOOKING_URL || "";
       const bookingLine = bookingUrl
         ? ` Schedule your pickup here: ${bookingUrl}`
         : " Call us at (734) 308-7600 to schedule.";
 
-      await twilioClient.messages.create({
-        to: phone,
-        from: process.env.TWILIO_FROM_NUMBER,
-        body: `Hi! This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} For questions call us at (734) 308-7600.`,
+      const tbRes = await fetch("https://textbelt.com/text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone,
+          message: `Hi! This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} For questions call us at (734) 308-7600.`,
+          key: process.env.TEXTBELT_KEY,
+        }),
       });
-      smsStatus = "sent";
-      console.log(`📱 SMS sent to ${phone}`);
+      const tbData = await tbRes.json();
+      if (tbData.success) {
+        smsStatus = "sent";
+        console.log(`📱 SMS sent to ${phone}`);
+      } else {
+        throw new Error(tbData.error || "Textbelt rejected the message");
+      }
     } catch (err) {
       smsError = err.message;
       console.error("SMS failed:", err.message);
@@ -447,8 +451,8 @@ app.post("/agent/approve", async (req, res) => {
   let phoneNote;
   if (!phone) {
     phoneNote = "No client phone was captured in the conversation.";
-  } else if (!twilioClient) {
-    phoneNote = `Client phone: <strong>${escapeHtml(phone)}</strong> — Twilio is not configured (add credentials to .env).`;
+  } else if (!process.env.TEXTBELT_KEY) {
+    phoneNote = `Client phone: <strong>${escapeHtml(phone)}</strong> — Textbelt is not configured (add TEXTBELT_KEY to .env).`;
   } else if (smsStatus === "sent") {
     phoneNote = `SMS confirmation sent to <strong>${escapeHtml(phone)}</strong>.`;
   } else {
