@@ -421,17 +421,19 @@ app.post("/agent/approve", async (req, res) => {
 
   if (phone && process.env.TEXTBELT_KEY) {
     try {
-      const bookingUrl = process.env.BOOKING_URL || "";
-      const bookingLine = bookingUrl
-        ? ` Schedule your pickup here: ${bookingUrl}`
-        : " Call us at (734) 308-7600 to schedule.";
+      const customerName = extractName(lead.transcript);
+      const greeting = customerName ? `Hi ${customerName}!` : "Hi!";
+      const calendarUrl = process.env.BOOKING_URL || "";
+      const bookingLine = calendarUrl
+        ? ` Book your pickup on our Google Calendar: ${calendarUrl}`
+        : " Call us at (734) 308-7600 to schedule your pickup.";
 
       const tbRes = await fetch("https://textbelt.com/text", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone,
-          message: `Hi! This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} For questions call us at (734) 308-7600.`,
+          message: `${greeting} This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} Questions? Call (734) 308-7600.`,
           key: process.env.TEXTBELT_KEY,
         }),
       });

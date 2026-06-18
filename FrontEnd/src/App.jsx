@@ -78,6 +78,12 @@ function App() {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (!isSending && assistantMode) {
+      textInputRef.current?.focus();
+    }
+  }, [isSending, assistantMode]);
+
   const toJpeg = (file) =>
     new Promise((resolve, reject) => {
       const objectUrl = URL.createObjectURL(file);
@@ -199,7 +205,6 @@ function App() {
       ]);
     } finally {
       setIsSending(false);
-      setTimeout(() => textInputRef.current?.focus(), 0);
     }
   };
 
