@@ -199,7 +199,7 @@ function App() {
       ]);
     } finally {
       setIsSending(false);
-      textInputRef.current?.focus();
+      setTimeout(() => textInputRef.current?.focus(), 0);
     }
   };
 
