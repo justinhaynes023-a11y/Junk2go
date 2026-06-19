@@ -5,12 +5,16 @@ import OpenAI from "openai";
 import { Resend } from "resend";
 import { google } from "googleapis";
 import crypto from "crypto";
+import { Vonage } from "@vonage/server-sdk";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const vonage = process.env.VONAGE_API_KEY && process.env.VONAGE_API_SECRET
+  ? new Vonage({ apiKey: process.env.VONAGE_API_KEY, apiSecret: process.env.VONAGE_API_SECRET })
+  : null;
 
 
 app.use(cors());
@@ -419,30 +423,25 @@ app.post("/agent/approve", async (req, res) => {
   let smsStatus = "not_sent";
   let smsError = null;
 
-  if (phone && process.env.TEXTBELT_KEY) {
+  if (phone && vonage && process.env.VONAGE_FROM_NUMBER) {
     try {
       const customerName = extractName(lead.transcript);
       const greeting = customerName ? `Hi ${customerName}!` : "Hi!";
-      const calendarUrl = process.env.BOOKING_URL || "";
-      const bookingLine = calendarUrl
-        ? ` Book your pickup on our Google Calendar: ${calendarUrl}`
+      const bookingUrl = process.env.BOOKING_URL || "";
+      const bookingLine = bookingUrl
+        ? ` Book your pickup: ${bookingUrl}`
         : " Call us at (734) 308-7600 to schedule your pickup.";
 
-      const tbRes = await fetch("https://textbelt.com/text", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone,
-          message: `${greeting} This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} Questions? Call (734) 308-7600.`,
-          key: process.env.TEXTBELT_KEY,
-        }),
+      const result = await vonage.sms.send({
+        to: phone.replace(/\D/g, ""),
+        from: process.env.VONAGE_FROM_NUMBER,
+        text: `${greeting} This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} Questions? Call (734) 308-7600.`,
       });
-      const tbData = await tbRes.json();
-      if (tbData.success) {
+      if (result.messages[0].status === "0") {
         smsStatus = "sent";
         console.log(`📱 SMS sent to ${phone}`);
       } else {
-        throw new Error(tbData.error || "Textbelt rejected the message");
+        throw new Error(result.messages[0]["error-text"] || "Vonage rejected the message");
       }
     } catch (err) {
       smsError = err.message;
@@ -453,8 +452,8 @@ app.post("/agent/approve", async (req, res) => {
   let phoneNote;
   if (!phone) {
     phoneNote = "No client phone was captured in the conversation.";
-  } else if (!process.env.TEXTBELT_KEY) {
-    phoneNote = `Client phone: <strong>${escapeHtml(phone)}</strong> — Textbelt is not configured (add TEXTBELT_KEY to .env).`;
+  } else if (!vonage || !process.env.VONAGE_FROM_NUMBER) {
+    phoneNote = `Client phone: <strong>${escapeHtml(phone)}</strong> — Vonage is not configured (add VONAGE_API_KEY, VONAGE_API_SECRET, VONAGE_FROM_NUMBER to .env).`;
   } else if (smsStatus === "sent") {
     phoneNote = `SMS confirmation sent to <strong>${escapeHtml(phone)}</strong>.`;
   } else {
