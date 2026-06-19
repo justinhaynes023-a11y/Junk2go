@@ -432,8 +432,10 @@ app.post("/agent/approve", async (req, res) => {
         ? ` Book your pickup: ${bookingUrl}`
         : " Call us at (734) 308-7600 to schedule your pickup.";
 
+      const digits = phone.replace(/\D/g, "");
+      const to = digits.length === 10 ? "1" + digits : digits;
       const result = await vonage.sms.send({
-        to: phone.replace(/\D/g, ""),
+        to,
         from: process.env.VONAGE_FROM_NUMBER,
         text: `${greeting} This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} Questions? Call (734) 308-7600.`,
       });
