@@ -578,6 +578,11 @@ function App() {
   <p>
     Open 7 Days A Week
   </p>
+
+  <div style={{ marginTop: "16px", display: "flex", gap: "20px", justifyContent: "center", flexWrap: "wrap" }}>
+    <a href="/privacy.html" style={{ color: "#888", fontSize: "13px" }}>Privacy Policy</a>
+    <a href="/terms.html" style={{ color: "#888", fontSize: "13px" }}>Terms &amp; Conditions</a>
+  </div>
 </footer>
     </div>
   );
