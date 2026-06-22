@@ -469,7 +469,7 @@ app.post("/agent/approve", async (req, res) => {
         : `<p style="color:#555;">Call us at <strong>(734) 308-7600</strong> to schedule your pickup.</p>`;
 
       await resend.emails.send({
-        from: process.env.FROM_EMAIL || "Junk2Go <onboarding@resend.dev>",
+        from: "Junk 2 Go <onboarding@resend.dev>",
         to: clientEmail,
         subject: `Your Junk 2 Go Quote Is Approved — $${finalPrice.toFixed(2)}`,
         html: `
