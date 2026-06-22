@@ -89,13 +89,13 @@ function buildImageAttachments(images = []) {
 }
 
 function extractPhone(transcript) {
-  const match = transcript.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
-  return match ? match[0] : null;
+  const matches = transcript.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g);
+  return matches ? matches[matches.length - 1] : null;
 }
 
 function extractEmail(transcript) {
-  const match = transcript.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  return match ? match[0] : null;
+  const matches = transcript.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+  return matches ? matches[matches.length - 1] : null;
 }
 
 function extractName(transcript) {
