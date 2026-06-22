@@ -93,6 +93,11 @@ function extractPhone(transcript) {
   return match ? match[0] : null;
 }
 
+function extractEmail(transcript) {
+  const match = transcript.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  return match ? match[0] : null;
+}
+
 function extractName(transcript) {
   const lines = transcript.split("\n\n");
   for (let i = 0; i < lines.length - 1; i++) {
@@ -322,6 +327,7 @@ app.post("/agent/lead", async (req, res) => {
     const transcript = buildTranscript(messages);
     const attachments = buildImageAttachments(images);
     const clientPhone = extractPhone(transcript);
+    const clientEmail = extractEmail(transcript);
 
     const token = crypto.randomBytes(24).toString("hex");
     const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
@@ -331,6 +337,7 @@ app.post("/agent/lead", async (req, res) => {
       quotedPrice,
       transcript,
       clientPhone,
+      clientEmail,
       images,
       createdAt: Date.now(),
     };
@@ -451,6 +458,41 @@ app.post("/agent/approve", async (req, res) => {
     }
   }
 
+  // Send confirmation email to customer
+  const clientEmail = lead.clientEmail;
+  if (clientEmail && resend) {
+    try {
+      const customerName = extractName(lead.transcript);
+      const bookingUrl = process.env.BOOKING_URL || "";
+      const bookingLine = bookingUrl
+        ? `<a href="${bookingUrl}" style="display:inline-block;background:#ffc400;color:#111;padding:14px 32px;border-radius:10px;font-weight:800;font-size:16px;text-decoration:none;margin:16px 0;">📅 Book Your Pickup</a>`
+        : `<p style="color:#555;">Call us at <strong>(734) 308-7600</strong> to schedule your pickup.</p>`;
+
+      await resend.emails.send({
+        from: process.env.FROM_EMAIL || "Junk2Go <onboarding@resend.dev>",
+        to: clientEmail,
+        subject: `Your Junk 2 Go Quote Is Approved — $${finalPrice.toFixed(2)}`,
+        html: `
+<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111;">
+  <div style="background:#111;padding:24px 32px;border-radius:12px 12px 0 0;">
+    <h1 style="color:#ffc400;margin:0;font-size:22px;letter-spacing:1px;">JUNK 2 GO</h1>
+  </div>
+  <div style="background:#f9f9f9;padding:28px 32px;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 12px 12px;">
+    <p style="font-size:16px;margin:0 0 8px;">Hi${customerName ? ` ${escapeHtml(customerName)}` : ""},</p>
+    <p style="font-size:15px;color:#444;margin:0 0 20px;">Great news! Your junk removal quote has been approved.</p>
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px;">Approved Price</p>
+    <div style="font-size:48px;font-weight:900;line-height:1;margin-bottom:20px;">$${finalPrice.toFixed(2)}</div>
+    ${bookingLine}
+    <p style="color:#888;font-size:13px;margin-top:20px;">Questions? Call us at <strong>(734) 308-7600</strong>.</p>
+  </div>
+</div>`,
+      });
+      console.log(`📧 Customer email sent to ${clientEmail}`);
+    } catch (err) {
+      console.error("Customer email failed:", err.message);
+    }
+  }
+
   let phoneNote;
   if (!phone) {
     phoneNote = "No client phone was captured in the conversation.";
@@ -462,10 +504,14 @@ app.post("/agent/approve", async (req, res) => {
     phoneNote = `SMS failed for <strong>${escapeHtml(phone)}</strong>: ${escapeHtml(smsError || "unknown error")}.`;
   }
 
+  const emailNote = clientEmail
+    ? `Confirmation email sent to <strong>${escapeHtml(clientEmail)}</strong>.`
+    : "No client email was captured in the conversation.";
+
   return res.send(
     resultPage(
       "✅ Quote Approved",
-      `<p style="margin-bottom:12px;">Final price set to <strong style="font-size:26px;">$${finalPrice.toFixed(2)}</strong></p><p>${phoneNote}</p>`,
+      `<p style="margin-bottom:12px;">Final price set to <strong style="font-size:26px;">$${finalPrice.toFixed(2)}</strong></p><p style="margin-bottom:8px;">${emailNote}</p><p>${phoneNote}</p>`,
       "#22c55e"
     )
   );
