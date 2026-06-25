@@ -371,7 +371,7 @@ function App() {
             <button className="nav-button" onClick={() => setAssistantMode(true)}>
               Get Quote Now →
             </button>
-            <a href="tel:7343087600" className="nav-button outline">
+            <a href="tel:7345799548" className="nav-button outline">
               Call Now
             </a>
           </div>
@@ -568,8 +568,8 @@ function App() {
   <h2>JUNK<span>2</span>GO</h2>
 
   <p>
-    <a href="tel:7343087600">
-      <Phone size={15} strokeWidth={2} /> (734) 308-7600
+    <a href="tel:7345799548">
+      <Phone size={15} strokeWidth={2} /> (734) 579-9548
     </a>
   </p>
 
