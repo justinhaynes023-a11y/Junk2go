@@ -437,14 +437,14 @@ app.post("/agent/approve", async (req, res) => {
       const bookingUrl = process.env.BOOKING_URL || "";
       const bookingLine = bookingUrl
         ? ` Book your pickup: ${bookingUrl}`
-        : " Call us at (734) 308-7600 to schedule your pickup.";
+        : " Call us at (734) 579-9548 to schedule your pickup.";
 
       const digits = phone.replace(/\D/g, "");
       const to = digits.length === 10 ? "1" + digits : digits;
       const result = await vonage.sms.send({
         to,
         from: process.env.VONAGE_FROM_NUMBER,
-        text: `${greeting} This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} Questions? Call (734) 308-7600.`,
+        text: `${greeting} This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} Questions? Call (734) 579-9548.`,
       });
       if (result.messages[0].status === "0") {
         smsStatus = "sent";
@@ -466,7 +466,7 @@ app.post("/agent/approve", async (req, res) => {
       const bookingUrl = process.env.BOOKING_URL || "";
       const bookingLine = bookingUrl
         ? `<a href="${bookingUrl}" style="display:inline-block;background:#ffc400;color:#111;padding:14px 32px;border-radius:10px;font-weight:800;font-size:16px;text-decoration:none;margin:16px 0;">📅 Book Your Pickup</a>`
-        : `<p style="color:#555;">Call us at <strong>(734) 308-7600</strong> to schedule your pickup.</p>`;
+        : `<p style="color:#555;">Call us at <strong>(734) 579-9548</strong> to schedule your pickup.</p>`;
 
       await resend.emails.send({
         from: "Junk 2 Go <onboarding@resend.dev>",
@@ -483,7 +483,7 @@ app.post("/agent/approve", async (req, res) => {
     <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px;">Approved Price</p>
     <div style="font-size:48px;font-weight:900;line-height:1;margin-bottom:20px;">$${finalPrice.toFixed(2)}</div>
     ${bookingLine}
-    <p style="color:#888;font-size:13px;margin-top:20px;">Questions? Call us at <strong>(734) 308-7600</strong>.</p>
+    <p style="color:#888;font-size:13px;margin-top:20px;">Questions? Call us at <strong>(734) 579-9548</strong>.</p>
   </div>
 </div>`,
       });
