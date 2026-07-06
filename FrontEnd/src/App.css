@@ -24,10 +24,11 @@ body {
 }
 
 .navbar {
-  height: 72px;
+  height: 78px;
   width: 100%;
-  background: rgba(5, 5, 5, 0.97);
-  backdrop-filter: blur(12px);
+  background: rgba(7, 20, 25, 0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: white;
   display: flex;
   justify-content: space-between;
@@ -36,7 +37,43 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(125, 198, 66, 0.12);
+}
+
+.brand-logo {
+  height: 56px;
+  width: auto;
+  border-radius: 10px;
+  background: white;
+  padding: 5px 8px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.nav-phone-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(125, 198, 66, 0.12);
+  color: #7DC642;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.nav-phone-btn:hover {
+  background: rgba(125, 198, 66, 0.22);
+  transform: translateY(-1px);
 }
 
 .brand {
@@ -47,7 +84,7 @@ body {
 
 .brand span,
 footer span {
-  color: #ffc400;
+  color: #7DC642;
   margin: 0 4px;
 }
 
@@ -72,12 +109,12 @@ footer span {
 }
 
 .nav-links a:hover {
-  color: #ffc400;
+  color: #7DC642;
 }
 
 .nav-button,
 .hero-buttons button {
-  background: #ffc400;
+  background: #7DC642;
   color: #111;
   border: none;
   padding: 13px 22px;
@@ -90,6 +127,8 @@ footer span {
   align-items: center;
   justify-content: center;
   letter-spacing: 0.2px;
+  box-shadow: 0 4px 14px rgba(125, 198, 66, 0.3);
+  transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
 }
 
 .hero {
@@ -109,10 +148,10 @@ footer span {
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.96) 0%,
-    rgba(0, 0, 0, 0.82) 42%,
-    rgba(0, 0, 0, 0.35) 72%,
-    rgba(0, 0, 0, 0.08) 100%
+    rgba(7, 20, 25, 0.97) 0%,
+    rgba(7, 20, 25, 0.86) 40%,
+    rgba(7, 20, 25, 0.34) 70%,
+    rgba(7, 20, 25, 0.04) 100%
   );
 }
 
@@ -127,8 +166,8 @@ footer span {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 196, 0, 0.16);
-  color: #ffc400;
+  background: rgba(125, 198, 66, 0.16);
+  color: #7DC642;
   padding: 10px 14px;
   border-radius: 5px;
   font-weight: 900;
@@ -145,7 +184,7 @@ footer span {
 }
 
 .hero h1 span {
-  color: #ffc400;
+  color: #7DC642;
 }
 
 .hero-text {
@@ -178,7 +217,7 @@ footer span {
 .nav-button.outline {
   background: transparent;
   color: white;
-  border: 2px solid #ffc400;
+  border: 2px solid #7DC642;
 }
 
 .chat-card {
@@ -195,7 +234,7 @@ footer span {
 
 .assistant-page {
   min-height: 100vh;
-  background: radial-gradient(ellipse at 60% 0%, rgba(255,196,0,0.07) 0%, transparent 60%), #0d0d0d;
+  background: radial-gradient(ellipse at 60% 0%, rgba(125, 198, 66, 0.07) 0%, transparent 60%), #071419;
 }
 
 .assistant-only {
@@ -215,8 +254,8 @@ footer span {
 
 .assistant-intro-tag {
   display: inline-block;
-  background: rgba(255, 196, 0, 0.18);
-  color: #ffc400;
+  background: rgba(125, 198, 66, 0.18);
+  color: #7DC642;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 1.5px;
@@ -245,7 +284,7 @@ footer span {
 }
 
 .call-fallback a {
-  color: #ffc400;
+  color: #7DC642;
   text-decoration: none;
   font-weight: 700;
 }
@@ -269,7 +308,7 @@ footer span {
 }
 
 .assistant-page .navbar {
-  background: rgba(5, 5, 5, 0.98);
+  background: rgba(7, 20, 25, 0.98);
 }
 
 .chat-header {
@@ -297,13 +336,13 @@ footer span {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #ffc400;
+  background: #7DC642;
   color: #111;
   font-weight: 900;
   display: grid;
   place-items: center;
   font-size: 18px;
-  box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.25);
+  box-shadow: 0 0 0 3px rgba(125, 198, 66, 0.25);
 }
 
 .assistant-info {
@@ -456,7 +495,7 @@ footer span {
 }
 
 .send-btn {
-  background: #ffc400;
+  background: #7DC642;
   border: none;
   width: 36px;
   height: 36px;
@@ -477,7 +516,7 @@ footer span {
 
 .feature-bar {
   width: 100%;
-  background: #090909;
+  background: #0D2229;
   color: white;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -487,11 +526,11 @@ footer span {
 }
 
 .feature-bar div {
-  border-right: 1px solid #333;
+  border-right: 1px solid rgba(255,255,255,0.08);
 }
 
 .feature-bar h3 {
-  color: #ffc400;
+  color: #7DC642;
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -502,11 +541,15 @@ footer span {
 .how {
   width: 100%;
   text-align: center;
-  padding: 75px 55px;
+  padding: 80px 55px;
+}
+
+.services {
+  background: #f7fcf3;
 }
 
 .section-label {
-  color: #ffc400;
+  color: #7DC642;
   font-weight: 900;
   font-size: 12px;
   letter-spacing: 2px;
@@ -538,28 +581,29 @@ footer span {
 .step-card {
   background: white;
   padding: 35px 25px;
-  border-radius: 14px;
+  border-radius: 16px;
   text-align: left;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  border-bottom: 5px solid #ffc400;
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05), 0 10px 28px rgba(0, 0, 0, 0.08);
+  border-bottom: 4px solid #7DC642;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .service-card:hover,
 .step-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+  transform: translateY(-6px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07), 0 22px 48px rgba(0, 0, 0, 0.14);
 }
 
 .icon {
-  width: 55px;
-  height: 55px;
-  background: #ffc400;
-  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #7DC642 0%, #6AB535 100%);
+  border-radius: 14px;
   display: grid;
   place-items: center;
   margin-bottom: 20px;
-  color: #111;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(125, 198, 66, 0.3);
 }
 
 .service-card h3,
@@ -597,7 +641,7 @@ footer span {
 }
 
 .area-list span {
-  background: #111;
+  background: #0D2229;
   color: white;
   padding: 10px 14px;
   border-radius: 999px;
@@ -619,7 +663,7 @@ footer span {
 }
 
 .how {
-  background: #111;
+  background: #0D2229;
   color: white;
 }
 
@@ -633,44 +677,47 @@ footer span {
 }
 
 .how .step-card {
-  background: #181818;
+  background: #102028;
   color: white;
-  border: 1px solid #333;
-  border-bottom: 5px solid #ffc400;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-bottom: 4px solid #7DC642;
 }
 
 .step-card span {
-  width: 42px;
-  height: 42px;
-  background: #ffc400;
-  color: #111;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #7DC642 0%, #6AB535 100%);
+  color: #fff;
   border-radius: 50%;
   display: grid;
   place-items: center;
   font-weight: 900;
   margin-bottom: 15px;
+  box-shadow: 0 4px 12px rgba(125, 198, 66, 0.35);
 }
 
 .stats {
   width: calc(100% - 110px);
   margin: 55px;
-  background: #090909;
+  background: #0D2229;
   color: white;
-  border-radius: 10px;
+  border-radius: 16px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
 }
 
 .stats div {
-  padding: 30px;
-  border-right: 1px solid #333;
+  padding: 36px 20px;
+  border-right: 1px solid rgba(255,255,255,0.07);
 }
 
 .reviews {
   width: 100%;
-  padding: 75px 55px;
-  background: #f8f8f8;
+  padding: 80px 55px;
+  background: #f7fcf3;
   text-align: center;
 }
 
@@ -679,7 +726,7 @@ footer span {
 }
 
 .review-button {
-  background: #ffc400;
+  background: #7DC642;
   color: #111;
   padding: 14px 26px;
   border-radius: 10px;
@@ -688,6 +735,14 @@ footer span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 14px rgba(125, 198, 66, 0.3);
+  transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+}
+
+.review-button:hover {
+  background: #6AB535;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(125, 198, 66, 0.42);
 }
 
 .review-status {
@@ -710,12 +765,19 @@ footer span {
   background: white;
   padding: 28px 24px;
   border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 12px 30px rgba(0, 0, 0, 0.08);
   text-align: left;
+  border-top: 3px solid #7DC642;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06), 0 20px 40px rgba(0, 0, 0, 0.12);
 }
 
 .review-card .stars {
-  color: #ffc400;
+  color: #7DC642;
   font-size: 18px;
   font-weight: 900;
   margin-bottom: 16px;
@@ -732,12 +794,12 @@ footer span {
 }
 
 .stats h2 {
-  color: #ffc400;
+  color: #7DC642;
   font-size: 36px;
 }
 
 footer {
-  background: #050505;
+  background: #071419;
   color: white;
   text-align: center;
   padding: 45px 20px;
@@ -760,31 +822,48 @@ footer a {
   gap: 7px;
 }
 
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-content {
+  animation: fadeUp 0.6s ease both;
+}
+
 .nav-button,
 .hero-buttons button {
-  transition: background 0.15s, opacity 0.15s;
+  transition: background 0.18s, transform 0.15s, box-shadow 0.18s, opacity 0.15s;
 }
 
 .nav-button:hover {
-  background: #e6b000;
+  background: #6AB535;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(125, 198, 66, 0.42);
 }
 
 .nav-button.outline:hover {
-  background: rgba(255, 196, 0, 0.12);
+  background: rgba(125, 198, 66, 0.12);
 }
 
 @media (max-width: 950px) {
   .navbar {
     height: auto;
-    padding: 14px 18px;
+    padding: 12px 18px;
   }
 
-  .brand {
-    font-size: 22px;
+  .brand-logo {
+    height: 44px;
+    border-radius: 8px;
+    padding: 4px 6px;
   }
 
   .nav-links {
     display: none;
+  }
+
+  .nav-actions {
+    gap: 8px;
   }
 
   .nav-button {
@@ -801,7 +880,7 @@ footer a {
   }
 
   .hero-overlay {
-    background: rgba(0, 0, 0, 0.78);
+    background: rgba(7, 20, 25, 0.82);
   }
 
   .hero-content {
@@ -884,16 +963,14 @@ footer a {
   }
 
   .service-area {
-    display: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 40px 18px;
   }
 
   .services,
   .how {
-    padding: 40px 18px;
-  }
-
-  .service-area {
-    padding: 40px 18px;
+    padding: 48px 18px;
   }
 
   .services h2,
@@ -943,7 +1020,7 @@ footer a {
 
   .nav-phone,
   .phone-link {
-    color: #ffc400;
+    color: #7DC642;
     text-decoration: none;
     font-weight: 900;
   }
@@ -983,4 +1060,23 @@ footer a {
     max-height: 50vh;
   }
 
+}
+
+@media (max-width: 500px) {
+  .service-grid,
+  .step-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h1 {
+    font-size: 28px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
 }

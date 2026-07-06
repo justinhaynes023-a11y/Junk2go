@@ -299,14 +299,9 @@ function App() {
     return (
       <div className="app assistant-page">
         <nav className="navbar">
-          <div className="brand">
-            <div>
-              JUNK<span>2</span>GO
-            </div>
-            <small>FAST. AFFORDABLE. RELIABLE.</small>
-          </div>
+          <img src="/IMG_3080.png" alt="Junk 2 Go" className="brand-logo" />
           <button className="nav-button outline" onClick={() => setAssistantMode(false)}>
-            Back
+            ← Back
           </button>
         </nav>
 
@@ -325,12 +320,7 @@ function App() {
   return (
     <div className="app">
       <nav className="navbar">
-        <div className="brand">
-          <div>
-            JUNK<span>2</span>GO
-          </div>
-          <small>FAST. AFFORDABLE. RELIABLE.</small>
-        </div>
+        <img src="/IMG_3080.png" alt="Junk 2 Go" className="brand-logo" />
 
         <div className="nav-links">
           <a href="#home">Home</a>
@@ -340,9 +330,14 @@ function App() {
           <a href="#contact">Contact</a>
         </div>
 
-        <button className="nav-button" onClick={() => setAssistantMode(true)}>
-          Get Quote
-        </button>
+        <div className="nav-actions">
+          <a href="tel:7345799548" className="nav-phone-btn" aria-label="Call us">
+            <Phone size={18} strokeWidth={2.5} />
+          </a>
+          <button className="nav-button" onClick={() => setAssistantMode(true)}>
+            Get Quote
+          </button>
+        </div>
       </nav>
 
       <section className="hero" id="home">
