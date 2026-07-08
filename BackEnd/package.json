@@ -9,7 +9,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@vonage/server-sdk": "^3.27.0",
+    "@infobip-api/sdk": "^0.3.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^4.22.2",

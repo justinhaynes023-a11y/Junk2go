@@ -89,15 +89,21 @@ function App() {
       const objectUrl = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => {
+        const MAX = 1200;
+        let { naturalWidth: w, naturalHeight: h } = img;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round((h * MAX) / w); w = MAX; }
+          else { w = Math.round((w * MAX) / h); h = MAX; }
+        }
         const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        canvas.getContext("2d").drawImage(img, 0, 0);
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
         URL.revokeObjectURL(objectUrl);
         resolve({
           name: file.name.replace(/\.[^.]+$/, ".jpg"),
           type: "image/jpeg",
-          dataUrl: canvas.toDataURL("image/jpeg", 0.82),
+          dataUrl: canvas.toDataURL("image/jpeg", 0.7),
         });
       };
       img.onerror = () => {
@@ -114,10 +120,10 @@ function App() {
       return;
     }
 
-    const selectedImages = await Promise.all(files.slice(0, 4).map(toJpeg));
+    const selectedImages = await Promise.all(files.slice(0, 15).map(toJpeg));
 
-    setAttachments((current) => [...current, ...selectedImages].slice(0, 4));
-    setLeadImages((current) => [...current, ...selectedImages].slice(0, 4));
+    setAttachments((current) => [...current, ...selectedImages].slice(0, 15));
+    setLeadImages((current) => [...current, ...selectedImages].slice(0, 15));
     event.target.value = "";
   };
 
@@ -188,7 +194,7 @@ function App() {
 
       const assistantMessage = { role: "assistant", text: data.reply };
       const conversationWithReply = [...nextMessages, assistantMessage];
-      const imagesForLead = [...leadImages, ...attachments].slice(0, 4);
+      const imagesForLead = [...leadImages, ...attachments].slice(0, 15);
 
       setMessages(conversationWithReply);
       setAttachments([]);

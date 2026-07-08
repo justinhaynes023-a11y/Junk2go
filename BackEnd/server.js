@@ -5,21 +5,21 @@ import OpenAI from "openai";
 import { Resend } from "resend";
 import { google } from "googleapis";
 import crypto from "crypto";
-import { Vonage } from "@vonage/server-sdk";
+import { Infobip, AuthType } from "@infobip-api/sdk";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const vonage = process.env.VONAGE_API_KEY && process.env.VONAGE_API_SECRET
-  ? new Vonage({ apiKey: process.env.VONAGE_API_KEY, apiSecret: process.env.VONAGE_API_SECRET })
+const infobip = process.env.INFOBIP_API_KEY && process.env.INFOBIP_BASE_URL
+  ? new Infobip({ baseUrl: process.env.INFOBIP_BASE_URL, apiKey: process.env.INFOBIP_API_KEY, authType: AuthType.ApiKey })
   : null;
 
 
 app.use(cors());
-app.use(express.json({ limit: "25mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 const PROMPT_ID = "pmpt_6a286324c7c88195ac05ac6d187ec75b0fafcc8c03f2a96d";
 
@@ -32,7 +32,7 @@ function normalizeImages(images = []) {
   if (!Array.isArray(images)) return [];
   return images
     .filter((img) => img?.dataUrl?.startsWith("data:image/"))
-    .slice(0, 4)
+    .slice(0, 15)
     .map((img) => img.dataUrl);
 }
 
@@ -430,7 +430,7 @@ app.post("/agent/approve", async (req, res) => {
   let smsStatus = "not_sent";
   let smsError = null;
 
-  if (phone && vonage && process.env.VONAGE_FROM_NUMBER) {
+  if (phone && infobip && process.env.INFOBIP_FROM_NUMBER) {
     try {
       const customerName = extractName(lead.transcript);
       const greeting = customerName ? `Hi ${customerName}!` : "Hi!";
@@ -441,16 +441,19 @@ app.post("/agent/approve", async (req, res) => {
 
       const digits = phone.replace(/\D/g, "");
       const to = digits.length === 10 ? "1" + digits : digits;
-      const result = await vonage.sms.send({
-        to,
-        from: process.env.VONAGE_FROM_NUMBER,
-        text: `${greeting} This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} Questions? Call (734) 579-9548.`,
+      const result = await infobip.channels.sms.send({
+        messages: [{
+          from: process.env.INFOBIP_FROM_NUMBER,
+          destinations: [{ to }],
+          text: `${greeting} This is Junk 2 Go. Your quote has been approved at $${finalPrice.toFixed(2)}.${bookingLine} Questions? Call (734) 579-9548.`,
+        }],
       });
-      if (result.messages[0].status === "0") {
+      const msgStatus = result.data?.messages?.[0]?.status;
+      if (msgStatus?.groupId === 1) {
         smsStatus = "sent";
         console.log(`📱 SMS sent to ${phone}`);
       } else {
-        throw new Error(result.messages[0]["error-text"] || "Vonage rejected the message");
+        throw new Error(msgStatus?.description || "Infobip rejected the message");
       }
     } catch (err) {
       smsError = err.message;
@@ -460,12 +463,13 @@ app.post("/agent/approve", async (req, res) => {
 
   // Send confirmation email to customer
   const clientEmail = lead.clientEmail;
+  let emailNote = "No client email was captured in the conversation.";
   if (clientEmail && resend) {
     try {
       const customerName = extractName(lead.transcript);
       const bookingUrl = process.env.BOOKING_URL || "";
       const bookingLine = bookingUrl
-        ? `<a href="${bookingUrl}" style="display:inline-block;background:#ffc400;color:#111;padding:14px 32px;border-radius:10px;font-weight:800;font-size:16px;text-decoration:none;margin:16px 0;">📅 Book Your Pickup</a>`
+        ? `<a href="${bookingUrl}" style="display:inline-block;background:#7DC642;color:#111;padding:14px 32px;border-radius:10px;font-weight:800;font-size:16px;text-decoration:none;margin:16px 0;">📅 Book Your Pickup</a>`
         : `<p style="color:#555;">Call us at <strong>(734) 579-9548</strong> to schedule your pickup.</p>`;
 
       await resend.emails.send({
@@ -474,8 +478,8 @@ app.post("/agent/approve", async (req, res) => {
         subject: `Your Junk 2 Go Quote Is Approved — $${finalPrice.toFixed(2)}`,
         html: `
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111;">
-  <div style="background:#111;padding:24px 32px;border-radius:12px 12px 0 0;">
-    <h1 style="color:#ffc400;margin:0;font-size:22px;letter-spacing:1px;">JUNK 2 GO</h1>
+  <div style="background:#0D2229;padding:24px 32px;border-radius:12px 12px 0 0;">
+    <h1 style="color:#7DC642;margin:0;font-size:22px;letter-spacing:1px;">JUNK 2 GO</h1>
   </div>
   <div style="background:#f9f9f9;padding:28px 32px;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 12px 12px;">
     <p style="font-size:16px;margin:0 0 8px;">Hi${customerName ? ` ${escapeHtml(customerName)}` : ""},</p>
@@ -488,25 +492,23 @@ app.post("/agent/approve", async (req, res) => {
 </div>`,
       });
       console.log(`📧 Customer email sent to ${clientEmail}`);
+      emailNote = `Confirmation email sent to <strong>${escapeHtml(clientEmail)}</strong>.`;
     } catch (err) {
       console.error("Customer email failed:", err.message);
+      emailNote = `Email failed for <strong>${escapeHtml(clientEmail)}</strong>: ${escapeHtml(err.message)}.`;
     }
   }
 
   let phoneNote;
   if (!phone) {
     phoneNote = "No client phone was captured in the conversation.";
-  } else if (!vonage || !process.env.VONAGE_FROM_NUMBER) {
-    phoneNote = `Client phone: <strong>${escapeHtml(phone)}</strong> — Vonage is not configured (add VONAGE_API_KEY, VONAGE_API_SECRET, VONAGE_FROM_NUMBER to .env).`;
+  } else if (!infobip || !process.env.INFOBIP_FROM_NUMBER) {
+    phoneNote = `Client phone: <strong>${escapeHtml(phone)}</strong> — Infobip not yet configured.`;
   } else if (smsStatus === "sent") {
     phoneNote = `SMS confirmation sent to <strong>${escapeHtml(phone)}</strong>.`;
   } else {
-    phoneNote = `SMS failed for <strong>${escapeHtml(phone)}</strong>: ${escapeHtml(smsError || "unknown error")}.`;
+    phoneNote = `SMS pending for <strong>${escapeHtml(phone)}</strong> (Infobip provisioning in progress).`;
   }
-
-  const emailNote = clientEmail
-    ? `Confirmation email sent to <strong>${escapeHtml(clientEmail)}</strong>.`
-    : "No client email was captured in the conversation.";
 
   return res.send(
     resultPage(
