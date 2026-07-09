@@ -211,6 +211,7 @@ function App() {
       ]);
     } finally {
       setIsSending(false);
+      textInputRef.current?.focus();
     }
   };
 
