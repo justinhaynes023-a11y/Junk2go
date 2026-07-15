@@ -917,9 +917,7 @@ footer a {
   }
 
   .hero-points {
-    gap: 10px;
-    margin-bottom: 18px;
-    font-size: 14px;
+    display: none;
   }
 
   .hero-buttons {
@@ -973,6 +971,7 @@ footer a {
   .service-grid,
   .step-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 14px;
   }
 
   .service-area {
@@ -983,7 +982,7 @@ footer a {
 
   .services,
   .how {
-    padding: 48px 18px;
+    padding: 36px 18px;
   }
 
   .services h2,
@@ -1039,7 +1038,7 @@ footer a {
   }
 
   .reviews {
-    padding: 40px 18px;
+    padding: 32px 18px;
   }
 
   .review-grid {
@@ -1076,13 +1075,17 @@ footer a {
 }
 
 @media (max-width: 500px) {
-  .service-grid,
-  .step-grid {
-    grid-template-columns: 1fr;
-  }
-
   .hero h1 {
     font-size: 28px;
+  }
+
+  .service-card,
+  .step-card {
+    padding: 16px 12px;
+  }
+
+  .map-box {
+    height: 200px;
   }
 
   .stats div {
