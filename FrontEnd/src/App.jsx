@@ -293,9 +293,11 @@ function App() {
               sendMessage();
             }
           }}
+          enterKeyHint="send"
         />
         <button
           className="send-btn"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => sendMessage()}
           disabled={isSending || (!draft.trim() && attachments.length === 0)}
         >
