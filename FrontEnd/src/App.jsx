@@ -306,7 +306,7 @@ function App() {
     return (
       <div className="app assistant-page">
         <nav className="navbar">
-          <img src="/IMG_3080.png" alt="Junk 2 Go" className="brand-logo" />
+          <img src="/logo.png" alt="Junk 2 Go" className="brand-logo" />
           <button className="nav-button outline" onClick={() => setAssistantMode(false)}>
             ← Back
           </button>
@@ -327,7 +327,7 @@ function App() {
   return (
     <div className="app">
       <nav className="navbar">
-        <img src="/IMG_3080.png" alt="Junk 2 Go" className="brand-logo" />
+        <img src="/logo.png" alt="Junk 2 Go" className="brand-logo" />
 
         <div className="nav-links">
           <a href="#home">Home</a>

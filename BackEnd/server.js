@@ -23,8 +23,16 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 const PROMPT_ID = "pmpt_6a286324c7c88195ac05ac6d187ec75b0fafcc8c03f2a96d";
 
-// Pending approvals: token -> leadData
+// Pending/approved leads: token -> leadData. Kept after approval so the link
+// stays openable (shows "already approved"); swept out after 30 days.
 const pendingLeads = new Map();
+const LEAD_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+setInterval(() => {
+  const cutoff = Date.now() - LEAD_TTL_MS;
+  for (const [token, lead] of pendingLeads) {
+    if (lead.createdAt < cutoff) pendingLeads.delete(token);
+  }
+}, 60 * 60 * 1000).unref();
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -333,6 +341,8 @@ app.post("/agent/lead", async (req, res) => {
       clientPhone,
       images,
       createdAt: Date.now(),
+      approved: false,
+      finalPrice: null,
     };
     pendingLeads.set(token, leadData);
 
@@ -384,6 +394,14 @@ app.post("/agent/lead", async (req, res) => {
   }
 });
 
+function alreadyApprovedPage(lead) {
+  return resultPage(
+    "✅ Already Approved",
+    `<p style="margin-bottom:12px;">This quote was already approved for <strong style="font-size:26px;">$${lead.finalPrice.toFixed(2)}</strong></p><p>Reopening this link won't charge or text the client again.</p>`,
+    "#22c55e"
+  );
+}
+
 // Manager clicks the approval link from email
 app.get("/agent/approve", (req, res) => {
   const { token } = req.query;
@@ -391,8 +409,12 @@ app.get("/agent/approve", (req, res) => {
 
   if (!lead) {
     return res.status(404).send(
-      resultPage("Link Invalid", "This approval link is invalid or has already been used.", "#ef4444")
+      resultPage("Link Invalid", "This approval link is invalid or has expired.", "#ef4444")
     );
+  }
+
+  if (lead.approved) {
+    return res.send(alreadyApprovedPage(lead));
   }
 
   return res.send(approvalPage(lead, token, null));
@@ -405,8 +427,12 @@ app.post("/agent/approve", async (req, res) => {
 
   if (!lead) {
     return res.status(404).send(
-      resultPage("Link Invalid", "This approval link is invalid or has already been used.", "#ef4444")
+      resultPage("Link Invalid", "This approval link is invalid or has expired.", "#ef4444")
     );
+  }
+
+  if (lead.approved) {
+    return res.send(alreadyApprovedPage(lead));
   }
 
   const finalPrice = parseFloat(String(price).replace(/[^0-9.]/g, ""));
@@ -414,7 +440,8 @@ app.post("/agent/approve", async (req, res) => {
     return res.send(approvalPage(lead, token, "Please enter a valid price amount."));
   }
 
-  pendingLeads.delete(token);
+  lead.approved = true;
+  lead.finalPrice = finalPrice;
   await updateLeadRow(lead.sheetRow, finalPrice);
 
   const phone = lead.clientPhone;
