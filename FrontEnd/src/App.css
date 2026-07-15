@@ -703,7 +703,7 @@ footer span {
   color: white;
   border-radius: 16px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   text-align: center;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   overflow: hidden;
@@ -712,6 +712,10 @@ footer span {
 .stats div {
   padding: 36px 20px;
   border-right: 1px solid rgba(255,255,255,0.07);
+}
+
+.stats div:last-child {
+  border-right: none;
 }
 
 .reviews {
@@ -995,27 +999,22 @@ footer a {
   }
 
   .stats {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     width: calc(100% - 36px);
     margin: 28px 18px;
   }
 
   .stats div {
-    padding: 20px 16px;
+    padding: 20px 10px;
     border-right: 1px solid #333;
-    border-bottom: 1px solid #333;
   }
 
-  .stats div:nth-child(2n) {
+  .stats div:last-child {
     border-right: none;
   }
 
-  .stats div:nth-last-child(-n+2) {
-    border-bottom: none;
-  }
-
   .stats h2 {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .nav-phone,
@@ -1073,7 +1072,15 @@ footer a {
   }
 
   .stats {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .stats div {
+    padding: 16px 6px;
+  }
+
+  .stats h2 {
+    font-size: 20px;
   }
 
   .review-grid {

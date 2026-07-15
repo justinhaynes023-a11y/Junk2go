@@ -161,6 +161,10 @@ function App() {
   };
 
   const sendMessage = async (overrideText = draft) => {
+    if (isSending) {
+      return;
+    }
+
     const text = overrideText.trim();
 
     if (!text && attachments.length === 0) {
@@ -284,12 +288,11 @@ function App() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && !isSending) {
+            if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               sendMessage();
             }
           }}
-          disabled={isSending}
         />
         <button
           className="send-btn"
@@ -508,12 +511,8 @@ function App() {
           <p>Happy Customers</p>
         </div>
         <div>
-          <h2>4.9/5</h2>
+          <h2>5/5</h2>
           <p>Average Rating</p>
-        </div>
-        <div>
-          <h2>5+</h2>
-          <p>Years In Business</p>
         </div>
       </section>
       <section className="reviews" id="reviews">
