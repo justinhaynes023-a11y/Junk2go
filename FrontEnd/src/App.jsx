@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Star, CheckCircle2, Zap, DollarSign, ShieldCheck, Leaf, Sofa, Refrigerator, Warehouse, Building2, Phone } from "lucide-react";
+import { Star, CheckCircle2, Zap, DollarSign, ShieldCheck, Leaf, Sofa, Refrigerator, Warehouse, Building2, Phone, MapPin } from "lucide-react";
 import "./App.css";
 
 const API_BASE_URL =
@@ -503,16 +503,20 @@ function App() {
 
       <section className="stats">
         <div>
-          <h2>2,500+</h2>
-          <p>Jobs Completed</p>
+          <MapPin size={28} strokeWidth={2} />
+          <h3>Locally Owned &amp; Operated</h3>
         </div>
         <div>
-          <h2>2,000+</h2>
-          <p>Happy Customers</p>
+          <ShieldCheck size={28} strokeWidth={2} />
+          <h3>Licensed &amp; Insured</h3>
         </div>
         <div>
-          <h2>5/5</h2>
-          <p>Average Rating</p>
+          <DollarSign size={28} strokeWidth={2} />
+          <h3>Free Estimates</h3>
+        </div>
+        <div>
+          <Star size={28} strokeWidth={2} />
+          <h3>5/5 Average Rating</h3>
         </div>
       </section>
       <section className="reviews" id="reviews">
